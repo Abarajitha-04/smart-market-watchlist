@@ -10,8 +10,16 @@ import { TwelveDataProvider } from "./data/providers/TwelveDataProvider.js";
 import type { MarketDataProvider } from "./data/types.js";
 
 const app = express();
+// Comma-separated list of allowed frontend origins, e.g.
+// "https://smart-market-watchlist-ixyg.vercel.app,http://localhost:5173"
+const allowedOrigins = (process.env.FRONTEND_ORIGIN ?? "http://localhost:5173")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
 app.use(
   cors({
+    origin: allowedOrigins,
     // The client needs to read this custom header to persist its identity
     // token (no real auth in v1 — see decision log) — without exposing it
     // explicitly, the browser's fetch API silently hides it from JS even
