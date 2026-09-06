@@ -27,11 +27,17 @@ export async function ingestSymbol(
     quote = await provider.fetchQuote(symbol);
   } catch (err) {
     // Bounded fallback, not an indefinite retry storm: one attempt against
-    // the real provider, then the seeded mock feed takes over silently.
+    // the real provider, then the seeded mock feed takes over. Logged
+    // loudly on purpose — a silent fallback is exactly the kind of hidden
+    // failure this project's reliability story is supposed to prevent.
     if (err instanceof ProviderError) {
+      console.warn(
+        `[ingestion] ${provider.name} failed for ${symbol} (${err.kind}): ${err.message} — falling back to ${fallback.name}`
+      );
       quote = await fallback.fetchQuote(symbol);
       usedFallback = true;
     } else {
+      console.error(`[ingestion] unexpected non-ProviderError for ${symbol}:`, err);
       throw err;
     }
   }
