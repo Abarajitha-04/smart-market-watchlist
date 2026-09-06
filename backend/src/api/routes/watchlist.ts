@@ -2,6 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { addWatchlistItem, removeWatchlistItem } from "../../db/repository.js";
 import { getWatchlistWithChanges, getSymbolEvidence } from "../../services/watchlistService.js";
+import { generateDigest } from "../../services/narration.js";
 
 export const watchlistRouter = Router();
 
@@ -49,7 +50,18 @@ watchlistRouter.get("/", async (req, res, next) => {
   try {
     const userId = (req as any).userId as string;
     const entries = await getWatchlistWithChanges(userId);
-    res.json({ items: entries });
+
+    // AI narration is additive and best-effort — a failure here must never
+    // fail the whole request. generateDigest already fails open to null,
+    // but this catch is a second, defensive layer against surprises.
+    let digest: string | null = null;
+    try {
+      digest = await generateDigest(entries);
+    } catch (err) {
+      console.warn("[watchlist] digest generation threw unexpectedly:", err);
+    }
+
+    res.json({ items: entries, digest });
   } catch (err) {
     next(err);
   }

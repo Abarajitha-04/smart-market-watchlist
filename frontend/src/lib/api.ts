@@ -1,4 +1,4 @@
-import type { ApiErrorBody, SystemStatus, WatchlistEntry } from "./types";
+import type { ApiErrorBody, SystemStatus, WatchlistEntry, WatchlistResponse } from "./types";
 
 const BASE_URL = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? "http://localhost:4000";
 const TOKEN_KEY = "smw_token";
@@ -64,7 +64,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const api = {
-  getWatchlist: () => request<{ items: WatchlistEntry[] }>("/watchlist"),
+  getWatchlist: () => request<WatchlistResponse>("/watchlist"),
   addSymbol: (symbol: string) =>
     request<{ symbol: string }>("/watchlist", { method: "POST", body: JSON.stringify({ symbol }) }),
   removeSymbol: (symbol: string) =>

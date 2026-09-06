@@ -3,6 +3,7 @@ import { AlertTriangle } from "lucide-react";
 import { useWatchlist } from "@/hooks/useWatchlist";
 import { AddSymbolForm } from "@/components/AddSymbolForm";
 import { StatusStrip } from "@/components/StatusStrip";
+import { AIDigestBanner } from "@/components/AIDigestBanner";
 import { SymbolCard } from "@/components/SymbolCard";
 import { EmptyWatchlistState, ErrorState, LoadingGrid, NoSignificantChangesState } from "@/components/States";
 import type { Tier, WatchlistEntry } from "@/lib/types";
@@ -64,6 +65,7 @@ export function Dashboard() {
 
       {!isLoading && !isError && (
         <>
+          <AIDigestBanner digest={data?.digest ?? null} />
           <Summary items={sorted} />
 
           {sorted.length === 0 ? (

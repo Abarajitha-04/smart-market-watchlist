@@ -47,8 +47,8 @@ const POLL_INTERVAL_MS = 20_000;
 
 async function pollOnce() {
   try {
-    await ingestAllWatchedSymbols(provider);
-    recordIngestion(provider.name, false);
+    const summary = await ingestAllWatchedSymbols(provider);
+    recordIngestion(provider.name, summary.usedFallback);
   } catch (err) {
     console.error("Ingestion cycle failed", err);
   }

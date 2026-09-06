@@ -64,8 +64,23 @@ export async function ingestSymbol(
   return { ok: true, quote, usedFallback };
 }
 
-export async function ingestAllWatchedSymbols(provider: MarketDataProvider): Promise<void> {
+export interface IngestionCycleSummary {
+  symbolCount: number;
+  usedFallback: boolean;
+  fallbackSymbols: string[];
+}
+
+export async function ingestAllWatchedSymbols(provider: MarketDataProvider): Promise<IngestionCycleSummary> {
   const symbols = await getDistinctWatchedSymbols();
   // Concurrent, but one call per distinct instrument — not per user.
-  await Promise.all(symbols.map((s) => ingestSymbol(provider, s)));
+  const results = await Promise.all(symbols.map((s) => ingestSymbol(provider, s)));
+
+  // Real per-cycle outcome, not a hardcoded guess — this is what /status
+  // reports, and it's only honest if it reflects what actually happened.
+  const fallbackSymbols = symbols.filter((_, i) => results[i].usedFallback);
+  return {
+    symbolCount: symbols.length,
+    usedFallback: fallbackSymbols.length > 0,
+    fallbackSymbols,
+  };
 }

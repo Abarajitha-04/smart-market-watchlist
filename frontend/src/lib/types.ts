@@ -28,6 +28,11 @@ export interface WatchlistEntry {
   dataSource: string | null;
 }
 
+export interface WatchlistResponse {
+  items: WatchlistEntry[];
+  digest: string | null;
+}
+
 export interface SystemStatus {
   lastIngestionAt: string | null;
   lastProviderUsed: string | null;
