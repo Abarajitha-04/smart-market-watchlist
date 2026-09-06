@@ -70,16 +70,30 @@ export interface IngestionCycleSummary {
   fallbackSymbols: string[];
 }
 
+// Rotates which symbol gets first crack at a limited request budget each
+// cycle. Without this, ingestSymbol()'s calls resolve in array order —
+// since a client-side rate limiter's tryAcquire() is synchronous, the same
+// symbols at the front of the list would win the budget every time,
+// starving whichever symbols happen to sort last.
+let rotationOffset = 0;
+
 export async function ingestAllWatchedSymbols(provider: MarketDataProvider): Promise<IngestionCycleSummary> {
   const symbols = await getDistinctWatchedSymbols();
+
+  const rotated =
+    symbols.length > 0
+      ? [...symbols.slice(rotationOffset % symbols.length), ...symbols.slice(0, rotationOffset % symbols.length)]
+      : symbols;
+  rotationOffset = (rotationOffset + 1) % Math.max(symbols.length, 1);
+
   // Concurrent, but one call per distinct instrument — not per user.
-  const results = await Promise.all(symbols.map((s) => ingestSymbol(provider, s)));
+  const results = await Promise.all(rotated.map((s) => ingestSymbol(provider, s)));
 
   // Real per-cycle outcome, not a hardcoded guess — this is what /status
   // reports, and it's only honest if it reflects what actually happened.
-  const fallbackSymbols = symbols.filter((_, i) => results[i].usedFallback);
+  const fallbackSymbols = rotated.filter((_, i) => results[i].usedFallback);
   return {
-    symbolCount: symbols.length,
+    symbolCount: rotated.length,
     usedFallback: fallbackSymbols.length > 0,
     fallbackSymbols,
   };

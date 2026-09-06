@@ -9,6 +9,7 @@ const EDGE_CASES = [
   { title: "Newly added symbol", handling: "Shows \"building history\" — never a fabricated tier from partial data." },
   { title: "Double-submit on add", handling: "Idempotent on the backend; a duplicate returns 409 rather than a second row." },
   { title: "Symbol not covered by the current data plan", handling: "Falls back to the mock feed like any other provider failure — and the UI marks that price \"Simulated data\" per symbol, rather than letting a mock number sit indistinguishable from a real one." },
+  { title: "Provider rate budget exceeded (many symbols, few free-tier credits)", handling: "A client-side sliding-window limiter fails fast before wasting a request once the minute's budget is spent, and which symbol gets priority rotates every cycle so the same few don't always win it." },
 ];
 
 function Row({ label, ok, value }: { label: string; ok: boolean; value: string }) {

@@ -1,4 +1,5 @@
 import { ProviderError, type MarketDataProvider, type Quote } from "../types.js";
+import { SlidingWindowRateLimiter } from "../rateLimiter.js";
 
 /**
  * Real data source. Deliberately isolated behind the same interface as
@@ -16,7 +17,17 @@ import { ProviderError, type MarketDataProvider, type Quote } from "../types.js"
 export class TwelveDataProvider implements MarketDataProvider {
   readonly name = "twelvedata";
 
-  constructor(private apiKey: string, private baseUrl = "https://api.twelvedata.com") {}
+  // 8 credits/minute on the free tier; default to 7 to leave a one-credit
+  // safety margin against clock-skew at the window boundary.
+  private readonly limiter: SlidingWindowRateLimiter;
+
+  constructor(
+    private apiKey: string,
+    private baseUrl = "https://api.twelvedata.com",
+    maxRequestsPerMinute = Number(process.env.TWELVE_DATA_MAX_PER_MINUTE ?? 7)
+  ) {
+    this.limiter = new SlidingWindowRateLimiter(maxRequestsPerMinute, 60_000);
+  }
 
   private parseSymbol(symbol: string): { ticker: string; exchange?: string } {
     const [ticker, exchange] = symbol.split(":");
@@ -24,6 +35,15 @@ export class TwelveDataProvider implements MarketDataProvider {
   }
 
   async fetchQuote(symbol: string): Promise<Quote> {
+    if (!this.limiter.tryAcquire()) {
+      // Known-over-budget — fail fast without spending a real request, so
+      // the caller's existing fallback-to-mock path takes over immediately.
+      throw new ProviderError(
+        `Client-side rate budget exhausted for this minute — deferring ${symbol} to fallback`,
+        "RATE_LIMIT"
+      );
+    }
+
     const { ticker, exchange } = this.parseSymbol(symbol);
     const params = new URLSearchParams({ symbol: ticker, apikey: this.apiKey });
     if (exchange) params.set("exchange", exchange);
