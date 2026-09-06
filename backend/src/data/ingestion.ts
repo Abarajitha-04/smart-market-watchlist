@@ -43,9 +43,22 @@ export async function ingestSymbol(
   }
 
   // Out-of-order / duplicate protection: never let an older or identical
-  // tick overwrite the newest known state for this symbol.
+  // tick overwrite the newest known state for this symbol — but only within
+  // the same source. Mock's synthetic timestamps are stamped at "now" on
+  // almost every tick, while a real provider's timestamp is genuine
+  // exchange time (which can legitimately be minutes or days old — after
+  // hours, over a weekend, or just normal quote latency). Comparing those
+  // two clocks against each other means a real quote can never win once a
+  // mock fallback has run once, silently starving the UI of real data
+  // forever. Cross-source transitions (mock -> real, real -> mock) always
+  // write through; the guard only protects against a genuinely out-of-order
+  // re-fetch from the same feed.
   const latest = await getLatestSnapshot(symbol);
-  if (latest && new Date(quote.sourceTimestamp).getTime() <= new Date(latest.sourceTimestamp).getTime()) {
+  if (
+    latest &&
+    latest.source === quote.source &&
+    new Date(quote.sourceTimestamp).getTime() <= new Date(latest.sourceTimestamp).getTime()
+  ) {
     return { ok: true, usedFallback, skippedReason: "stale-or-duplicate-timestamp" };
   }
 
