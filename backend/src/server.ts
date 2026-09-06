@@ -17,7 +17,7 @@ app.use(
     // explicitly, the browser's fetch API silently hides it from JS even
     // though it's present on the wire, and the client would never persist
     // a token at all.
-    exposedHeaders: ["x-watchlist-token"],
+    exposedHeaders: ["x-watchlist-token", "x-watchlist-device"],
   })
 );
 app.use(express.json());

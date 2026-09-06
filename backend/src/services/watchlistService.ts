@@ -35,14 +35,19 @@ function isStale(sourceTimestamp: string | null): boolean {
  * Builds the watchlist view for a user AND resets each item's checkpoint —
  * this is the exact read that consumes "since you last checked" and
  * establishes the next one. See decision log: checkpoint updates on read.
+ *
+ * The checkpoint is scoped per-device (see migrations/002_device_baselines.sql):
+ * watchlist ITEMS are shared across every device on this account (same
+ * userId), but reading on one device only resets ITS OWN "since you last
+ * checked" state, not every device's.
  */
-export async function getWatchlistWithChanges(userId: string): Promise<WatchlistEntry[]> {
+export async function getWatchlistWithChanges(userId: string, deviceId: string): Promise<WatchlistEntry[]> {
   const symbols = await getWatchlistSymbols(userId);
 
   return Promise.all(
     symbols.map(async (symbol) => {
       const [baseline, window, latest] = await Promise.all([
-        getBaseline(userId, symbol),
+        getBaseline(userId, deviceId, symbol),
         getRecentWindow(symbol, 20),
         getLatestSnapshot(symbol),
       ]);
@@ -50,10 +55,10 @@ export async function getWatchlistWithChanges(userId: string): Promise<Watchlist
       const evidence = evaluateChange(window, baseline);
       const stale = isStale(latest?.sourceTimestamp ?? null);
 
-      // Reset the checkpoint to the latest known price now that the user
-      // has seen it — but only if we actually have fresh data to check.
+      // Reset this device's checkpoint to the latest known price now that
+      // it has seen it — but only if we actually have fresh data to check.
       if (latest) {
-        await upsertBaseline(userId, symbol, latest.price);
+        await upsertBaseline(userId, deviceId, symbol, latest.price);
       }
 
       return {
@@ -70,7 +75,7 @@ export async function getWatchlistWithChanges(userId: string): Promise<Watchlist
   );
 }
 
-export async function getSymbolEvidence(userId: string, symbol: string): Promise<Evidence> {
-  const [baseline, window] = await Promise.all([getBaseline(userId, symbol), getRecentWindow(symbol, 20)]);
+export async function getSymbolEvidence(userId: string, deviceId: string, symbol: string): Promise<Evidence> {
+  const [baseline, window] = await Promise.all([getBaseline(userId, deviceId, symbol), getRecentWindow(symbol, 20)]);
   return evaluateChange(window, baseline);
 }

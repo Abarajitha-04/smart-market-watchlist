@@ -1,0 +1,3 @@
+# Pitch (100 words)
+
+Every watchlist app shows you the same raw % change — but a stock that normally swings 4% a day isn't alarming at 4%, and one that never moves 0.5% absolutely is. Smart Market Watchlist flags what's actually unusual *for that stock*, using a deterministic z-score and volume-ratio signal computed against each symbol's own rolling history — never a flat threshold. The detection engine is pure and zero-I/O, so nothing (including AI) can corrupt what counts as meaningful; an optional AI layer only narrates the engine's own output afterward. Every flagged move is explained with real numbers, live, not asserted.

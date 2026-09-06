@@ -1,3 +1,5 @@
+import { SyncPanel } from "@/components/SyncPanel";
+
 const PRINCIPLES = [
   {
     title: "The change-detection engine is pure and deterministic",
@@ -16,8 +18,8 @@ const PRINCIPLES = [
     body: "Narration is optional and fails open to the raw numbers on timeout or error — the product still works with zero AI involvement.",
   },
   {
-    title: "\"Since you last checked\" is a real checkpoint",
-    body: "Stored per-user-per-symbol and updated on read, not a client-side illusion. Multi-device sync is a stated, conscious trade-off, not something quietly broken.",
+    title: "\"Since you last checked\" is a real checkpoint, kept per device",
+    body: "Stored per-account-per-device-per-symbol and updated on read, not a client-side illusion. Watchlist items are shared across every device on the same account, but each device tracks its own checkpoint — checking the watchlist on your phone never silently consumes what your laptop would otherwise flag. Link a second device with the sync code below.",
   },
 ];
 
@@ -49,6 +51,8 @@ export function About() {
           </div>
         ))}
       </div>
+
+      <SyncPanel />
 
       <div className="rounded-2xl border border-border bg-surface-raised p-5 shadow-card">
         <h2 className="text-sm font-semibold text-ink">Explicitly cut from v1</h2>

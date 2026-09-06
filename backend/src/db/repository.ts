@@ -79,22 +79,29 @@ export async function getWatchlistSymbols(userId: string): Promise<string[]> {
   return rows.map((r) => r.symbol);
 }
 
-export async function getBaseline(userId: string, symbol: string): Promise<number | null> {
+/**
+ * Checkpoint read, scoped per-device. See migrations/002_device_baselines.sql:
+ * the watchlist ITEMS are shared across every device on the same account
+ * (same user_id), but "since you last checked" is tracked independently
+ * per device so checking on your phone never silently consumes what your
+ * laptop would otherwise flag.
+ */
+export async function getBaseline(userId: string, deviceId: string, symbol: string): Promise<number | null> {
   const { rows } = await pool.query(
-    `SELECT last_seen_price FROM user_baselines WHERE user_id = $1 AND symbol = $2`,
-    [userId, symbol]
+    `SELECT last_seen_price FROM device_baselines WHERE user_id = $1 AND device_id = $2 AND symbol = $3`,
+    [userId, deviceId, symbol]
   );
   return rows.length ? Number(rows[0].last_seen_price) : null;
 }
 
-/** Sets the checkpoint. This is the exact moment "since you last checked" resets. */
-export async function upsertBaseline(userId: string, symbol: string, price: number): Promise<void> {
+/** Sets the checkpoint for this device. This is the exact moment "since you last checked" resets — for this device only. */
+export async function upsertBaseline(userId: string, deviceId: string, symbol: string, price: number): Promise<void> {
   await pool.query(
-    `INSERT INTO user_baselines (user_id, symbol, last_seen_price, last_seen_at)
-     VALUES ($1, $2, $3, now())
-     ON CONFLICT (user_id, symbol)
+    `INSERT INTO device_baselines (user_id, device_id, symbol, last_seen_price, last_seen_at)
+     VALUES ($1, $2, $3, $4, now())
+     ON CONFLICT (user_id, device_id, symbol)
      DO UPDATE SET last_seen_price = EXCLUDED.last_seen_price, last_seen_at = now()`,
-    [userId, symbol, price]
+    [userId, deviceId, symbol, price]
   );
 }
 

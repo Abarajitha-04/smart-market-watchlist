@@ -49,7 +49,8 @@ watchlistRouter.delete("/:symbol", async (req, res, next) => {
 watchlistRouter.get("/", async (req, res, next) => {
   try {
     const userId = (req as any).userId as string;
-    const entries = await getWatchlistWithChanges(userId);
+    const deviceId = (req as any).deviceId as string;
+    const entries = await getWatchlistWithChanges(userId, deviceId);
 
     // AI narration is additive and best-effort — a failure here must never
     // fail the whole request. generateDigest already fails open to null,
@@ -70,8 +71,9 @@ watchlistRouter.get("/", async (req, res, next) => {
 watchlistRouter.get("/:symbol/evidence", async (req, res, next) => {
   try {
     const userId = (req as any).userId as string;
+    const deviceId = (req as any).deviceId as string;
     const symbol = req.params.symbol.toUpperCase();
-    const evidence = await getSymbolEvidence(userId, symbol);
+    const evidence = await getSymbolEvidence(userId, deviceId, symbol);
     res.json(evidence);
   } catch (err) {
     next(err);
