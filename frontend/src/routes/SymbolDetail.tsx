@@ -3,6 +3,7 @@ import { ArrowLeft, Loader2 } from "lucide-react";
 import { useEvidence, useWatchlist } from "@/hooks/useWatchlist";
 import { TierBadge } from "@/components/TierBadge";
 import { FreshnessBadge } from "@/components/FreshnessBadge";
+import { DataSourceBadge } from "@/components/DataSourceBadge";
 import { Sparkline } from "@/components/Sparkline";
 import { EvidenceMeter } from "@/components/EvidenceMeter";
 
@@ -53,8 +54,9 @@ export function SymbolDetail() {
               <h1 className="font-mono text-xl font-bold tracking-tight text-ink">{entry.symbol}</h1>
               <TierBadge tier={evidence.tier} />
             </div>
-            <div className="mt-1.5">
+            <div className="mt-1.5 flex items-center gap-2">
               <FreshnessBadge symbol={entry.symbol} isStale={entry.isStale} lastUpdated={entry.lastUpdated} />
+              <DataSourceBadge source={entry.dataSource} />
             </div>
           </div>
           <div className="text-right">

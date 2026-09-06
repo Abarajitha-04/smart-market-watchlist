@@ -19,6 +19,11 @@ export interface WatchlistEntry {
   /** Last N prices from the same window already fetched for evidence —
    *  zero extra DB cost, backs a lightweight trend sparkline in the UI. */
   recentPrices: number[];
+  /** Which provider actually supplied the latest stored snapshot
+   *  ("twelvedata" | "mock") — surfaced per-symbol so a provider-coverage
+   *  gap (e.g. NSE/BSE requiring a paid Twelve Data plan) is visible to
+   *  the user instead of silently indistinguishable from real data. */
+  dataSource: string | null;
 }
 
 function isStale(sourceTimestamp: string | null): boolean {
@@ -59,6 +64,7 @@ export async function getWatchlistWithChanges(userId: string): Promise<Watchlist
         isStale: stale,
         evidence,
         recentPrices: window.map((p) => p.price),
+        dataSource: latest?.source ?? null,
       };
     })
   );

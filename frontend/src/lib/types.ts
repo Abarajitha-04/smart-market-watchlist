@@ -25,6 +25,7 @@ export interface WatchlistEntry {
   isStale: boolean;
   evidence: Evidence;
   recentPrices: number[];
+  dataSource: string | null;
 }
 
 export interface SystemStatus {

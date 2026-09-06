@@ -4,6 +4,7 @@ import { ArrowRight, Loader2, X } from "lucide-react";
 import type { WatchlistEntry } from "@/lib/types";
 import { TierBadge } from "./TierBadge";
 import { FreshnessBadge } from "./FreshnessBadge";
+import { DataSourceBadge } from "./DataSourceBadge";
 import { Sparkline } from "./Sparkline";
 import { useRemoveSymbol } from "@/hooks/useWatchlist";
 
@@ -36,8 +37,9 @@ export function SymbolCard({ entry, index }: { entry: WatchlistEntry; index: num
             <h3 className="truncate font-mono text-sm font-semibold tracking-tight text-ink">{entry.symbol}</h3>
             <TierBadge tier={entry.evidence.tier} size="sm" />
           </div>
-          <div className="mt-1">
+          <div className="mt-1 flex items-center gap-2">
             <FreshnessBadge symbol={entry.symbol} isStale={entry.isStale} lastUpdated={entry.lastUpdated} />
+            <DataSourceBadge source={entry.dataSource} />
           </div>
         </div>
 

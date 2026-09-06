@@ -8,6 +8,7 @@ const EDGE_CASES = [
   { title: "Market closed / pre-market / weekend", handling: "Shown as its own explicit state, distinct from a genuine staleness problem." },
   { title: "Newly added symbol", handling: "Shows \"building history\" — never a fabricated tier from partial data." },
   { title: "Double-submit on add", handling: "Idempotent on the backend; a duplicate returns 409 rather than a second row." },
+  { title: "Symbol not covered by the current data plan", handling: "Falls back to the mock feed like any other provider failure — and the UI marks that price \"Simulated data\" per symbol, rather than letting a mock number sit indistinguishable from a real one." },
 ];
 
 function Row({ label, ok, value }: { label: string; ok: boolean; value: string }) {
