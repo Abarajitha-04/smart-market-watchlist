@@ -5,13 +5,15 @@ import { getWatchlistWithChanges, getSymbolEvidence } from "../../services/watch
 
 export const watchlistRouter = Router();
 
+// Plain symbols ("AAPL") default to US exchanges. Non-US equities use
+// "SYMBOL:EXCHANGE" (e.g. "RELIANCE:NSE", "TCS:BSE") — see TwelveDataProvider.
 const addSchema = z.object({
   symbol: z
     .string()
     .trim()
     .min(1)
     .max(20)
-    .regex(/^[A-Za-z0-9.\-]+$/, "Symbol contains invalid characters")
+    .regex(/^[A-Za-z0-9.\-]+(:[A-Za-z0-9.\-]+)?$/, "Symbol contains invalid characters")
     .transform((s) => s.toUpperCase()),
 });
 

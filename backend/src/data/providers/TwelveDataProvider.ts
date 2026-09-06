@@ -5,14 +5,29 @@ import { ProviderError, type MarketDataProvider, type Quote } from "../types.js"
  * MockProvider so business logic never talks to a vendor-specific shape —
  * see decision log: "Never scatter vendor-specific API calls through
  * business logic."
+ *
+ * Symbol format: plain symbols ("AAPL", "MSFT") are assumed US exchanges,
+ * which is Twelve Data's default. Indian (and other non-US) equities need
+ * an explicit exchange, so we accept "SYMBOL:EXCHANGE" (e.g.
+ * "RELIANCE:NSE", "TCS:BSE") as the watchlist symbol string — that full
+ * string is also what's stored as the symbol key everywhere else in the
+ * system, so a stock is never ambiguous between exchanges.
  */
 export class TwelveDataProvider implements MarketDataProvider {
   readonly name = "twelvedata";
 
   constructor(private apiKey: string, private baseUrl = "https://api.twelvedata.com") {}
 
+  private parseSymbol(symbol: string): { ticker: string; exchange?: string } {
+    const [ticker, exchange] = symbol.split(":");
+    return exchange ? { ticker, exchange } : { ticker };
+  }
+
   async fetchQuote(symbol: string): Promise<Quote> {
-    const url = `${this.baseUrl}/quote?symbol=${encodeURIComponent(symbol)}&apikey=${this.apiKey}`;
+    const { ticker, exchange } = this.parseSymbol(symbol);
+    const params = new URLSearchParams({ symbol: ticker, apikey: this.apiKey });
+    if (exchange) params.set("exchange", exchange);
+    const url = `${this.baseUrl}/quote?${params.toString()}`;
 
     let res: Response;
     try {
@@ -36,7 +51,7 @@ export class TwelveDataProvider implements MarketDataProvider {
     });
 
     if (body?.status === "error" || body?.code === 404) {
-      throw new ProviderError(`Unknown symbol: ${symbol}`, "NOT_FOUND");
+      throw new ProviderError(`Unknown symbol: ${symbol} (${body?.message ?? "no message"})`, "NOT_FOUND");
     }
 
     const price = Number(body.close ?? body.price);
@@ -54,6 +69,9 @@ export class TwelveDataProvider implements MarketDataProvider {
       : new Date().toISOString();
 
     return {
+      // Store the full "SYMBOL:EXCHANGE" form the user added, not just the
+      // bare ticker — keeps NSE RELIANCE and any future US RELIANCE (if it
+      // existed) from colliding under the same symbol key.
       symbol,
       price,
       volume: Number.isFinite(volume) ? volume : 0,
