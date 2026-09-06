@@ -6,7 +6,7 @@
 
 A watchlist that doesn't just show prices — it tells you which of your stocks moved in a way that's actually unusual *for that stock*, versus normal day-to-day noise. No flat "±3% = alert" threshold. Every signal is computed relative to each symbol's own recent volatility and volume, so a jumpy small-cap and a sleepy blue-chip are never held to the same bar.
 
-**Live demo:** _[backend URL] · [frontend URL]_ — fill in after deploy
+**Live demo:** [smart-market-watchlist-ixyg.vercel.app](https://smart-market-watchlist-ixyg.vercel.app) · backend: [smart-market-watchlist-backend-76ql.onrender.com](https://smart-market-watchlist-backend-76ql.onrender.com)
 
 ---
 
