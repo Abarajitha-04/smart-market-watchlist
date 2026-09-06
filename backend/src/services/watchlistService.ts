@@ -16,6 +16,9 @@ export interface WatchlistEntry {
   lastUpdated: string | null;
   isStale: boolean;
   evidence: Evidence;
+  /** Last N prices from the same window already fetched for evidence —
+   *  zero extra DB cost, backs a lightweight trend sparkline in the UI. */
+  recentPrices: number[];
 }
 
 function isStale(sourceTimestamp: string | null): boolean {
@@ -55,6 +58,7 @@ export async function getWatchlistWithChanges(userId: string): Promise<Watchlist
         lastUpdated: latest?.sourceTimestamp ?? null,
         isStale: stale,
         evidence,
+        recentPrices: window.map((p) => p.price),
       };
     })
   );

@@ -24,6 +24,7 @@ export interface Evidence {
   rollingVolatility: number | null;
   rollingAvgVolume: number | null;
   windowSize: number;
+  historyCount: number;
   sufficientHistory: boolean;
   reason: string;
 }
@@ -87,6 +88,7 @@ export function evaluateChange(
       rollingVolatility: null,
       rollingAvgVolume: null,
       windowSize,
+      historyCount: 0,
       sufficientHistory: false,
       reason: "No data available yet.",
     };
@@ -110,6 +112,7 @@ export function evaluateChange(
       rollingVolatility: null,
       rollingAvgVolume: null,
       windowSize,
+      historyCount: history.length,
       sufficientHistory: false,
       reason: `Insufficient history: ${history.length}/${windowSize} snapshots. Showing raw numbers only.`,
     };
@@ -159,6 +162,7 @@ export function evaluateChange(
     rollingVolatility: volatility,
     rollingAvgVolume: avgVolume,
     windowSize,
+    historyCount: window.length,
     sufficientHistory: true,
     reason,
   };

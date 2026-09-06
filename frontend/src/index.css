@@ -1,0 +1,103 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --surface: 255 255 255;
+  --surface-raised: 255 255 255;
+  --surface-sunken: 246 247 249;
+  --border: 228 230 235;
+  --border-strong: 210 213 220;
+  --ink: 17 20 26;
+  --ink-muted: 90 97 110;
+  --ink-faint: 145 151 163;
+  --accent: 20 130 110;
+  --accent-ink: 255 255 255;
+  --tier-normal: 120 128 140;
+  --tier-moderate: 191 128 27;
+  --tier-high: 199 62 58;
+
+  color-scheme: light;
+}
+
+.dark {
+  --surface: 15 17 22;
+  --surface-raised: 22 25 32;
+  --surface-sunken: 10 11 15;
+  --border: 40 44 54;
+  --border-strong: 58 63 76;
+  --ink: 236 238 242;
+  --ink-muted: 158 165 178;
+  --ink-faint: 100 107 120;
+  --accent: 45 212 175;
+  --accent-ink: 6 20 18;
+  --tier-normal: 120 128 140;
+  --tier-moderate: 224 168 62;
+  --tier-high: 232 92 88;
+
+  color-scheme: dark;
+}
+
+* {
+  border-color: rgb(var(--border));
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  @apply bg-surface text-ink antialiased;
+  font-feature-settings: "cv11", "ss01";
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Ambient background: layered radial gradients + a fine grid, tuned per
+   theme via CSS variables rather than a shipped raster image — crisp at
+   any resolution/DPI, zero network weight, no broken-image risk. */
+.app-background {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-color: rgb(var(--surface-sunken));
+  background-image:
+    radial-gradient(1200px 600px at 85% -10%, rgb(var(--accent) / 0.16), transparent 60%),
+    radial-gradient(900px 500px at -10% 10%, rgb(var(--accent) / 0.08), transparent 55%),
+    linear-gradient(rgb(var(--border) / 0.5) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(var(--border) / 0.5) 1px, transparent 1px);
+  background-size: auto, auto, 48px 48px, 48px 48px;
+  background-position: 0 0, 0 0, -1px -1px, -1px -1px;
+  mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, black 40%, transparent 100%);
+}
+
+::selection {
+  background: rgb(var(--accent) / 0.25);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--border-strong));
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--ink-faint));
+}
+
+.skeleton {
+  background-image: linear-gradient(
+    90deg,
+    rgb(var(--surface-raised)) 0%,
+    rgb(var(--border) / 0.6) 50%,
+    rgb(var(--surface-raised)) 100%
+  );
+  background-size: 200% 100%;
+}

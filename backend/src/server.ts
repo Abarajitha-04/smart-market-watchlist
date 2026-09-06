@@ -10,7 +10,16 @@ import { TwelveDataProvider } from "./data/providers/TwelveDataProvider.js";
 import type { MarketDataProvider } from "./data/types.js";
 
 const app = express();
-app.use(cors());
+app.use(
+  cors({
+    // The client needs to read this custom header to persist its identity
+    // token (no real auth in v1 — see decision log) — without exposing it
+    // explicitly, the browser's fetch API silently hides it from JS even
+    // though it's present on the wire, and the client would never persist
+    // a token at all.
+    exposedHeaders: ["x-watchlist-token"],
+  })
+);
 app.use(express.json());
 
 app.use("/", systemRouter);
